@@ -44,4 +44,13 @@ public class DevAccountManager
             //TODO add other stuff to devAccount maybe
         }
     }
+
+    public String getFirstAccountNameOrNull()
+    {
+        if(!accounts.isEmpty())
+        {
+            return accounts.get(0).account.name;
+        }
+        return null;
+    }
 }

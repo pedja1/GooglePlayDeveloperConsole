@@ -38,6 +38,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
     compile 'com.android.support:support-v4:21.0.0'
     compile 'com.google.apis:google-api-services-androidpublisher:v2-rev9-1.19.0'
     compile 'com.android.support:appcompat-v7:21.0.0'
@@ -46,4 +47,6 @@ dependencies {
     compile ('com.google.api-client:google-api-client-android:1.19.0') {
         exclude group: 'com.google.android.google-play-services'
     }
+
+    compile project (":VolleyPlus:library")
 }
