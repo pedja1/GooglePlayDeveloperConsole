@@ -4,6 +4,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,14 +20,17 @@ import android.view.ViewGroup;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.androidpublisher.AndroidPublisher;
 import com.google.api.services.androidpublisher.AndroidPublisherScopes;
+import com.google.api.services.androidpublisher.model.ApksListResponse;
 
+import java.io.IOException;
 import java.util.Collections;
-
 
 public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks
 {
@@ -57,19 +61,18 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
         // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
         credential = GoogleAccountCredential.usingOAuth2(this, Collections.singleton(AndroidPublisherScopes.ANDROIDPUBLISHER));
         credential.setSelectedAccountName(PrefsManager.getActiveAccount());
 
         publisher = new AndroidPublisher.Builder(httpTransport, jsonFactory, credential).build();
+
+        new ATLoadAccounts(this).execute();
     }
 
     @Override
@@ -281,4 +284,55 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         startActivityForResult(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
     }
 
+
+    public static class ATLoadAccounts extends AsyncTask<Void, Void, Void>
+    {
+        GoogleAccountCredential credential;
+        AndroidPublisher publisher;
+        MainActivity activity;
+
+        public ATLoadAccounts(MainActivity activity)
+        {
+            this.activity = activity;
+            this.credential = activity.credential;
+            this.publisher = activity.publisher;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params)
+        {
+            try
+            {
+                AndroidPublisher.Edits.Apks.List edits = publisher.edits().apks().list("rs.pedjaapps.eventlogger", "rs.pedjaapps.eventlogger");
+                ApksListResponse response = edits.execute();
+                System.out.println("edits:" + response);
+            }
+            catch (final GooglePlayServicesAvailabilityIOException availabilityException)
+            {
+                activity.showGooglePlayServicesAvailabilityErrorDialog(availabilityException.getConnectionStatusCode());
+            }
+            catch (UserRecoverableAuthIOException userRecoverableException)
+            {
+                activity.startActivityForResult(userRecoverableException.getIntent(), REQUEST_AUTHORIZATION);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            /*try
+            {
+                String token = credential.getToken();
+                System.out.println("token:" + token);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            catch (GoogleAuthException e)
+            {
+                e.printStackTrace();
+            }*/
+            return null;
+        }
+    }
 }
