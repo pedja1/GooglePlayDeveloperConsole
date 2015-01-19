@@ -9,10 +9,21 @@ import android.accounts.Account;
  */
 public class DevAccount
 {
-    public final Account account;
+    /**
+     * Id of the account (email)*/
+    public final String id;
+    public String name, avatar;
 
     public DevAccount(Account account)
     {
-        this.account = account;
+        this.id = account.name;
     }
+
+    @Override
+    public String toString()
+    {
+        return id;
+    }
+
+    public static final String CREATE_TABLE = "";
 }
