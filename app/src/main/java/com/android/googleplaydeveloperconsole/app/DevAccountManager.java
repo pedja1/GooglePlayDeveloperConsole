@@ -37,19 +37,31 @@ public class DevAccountManager
     public void init(Context context)
     {
         Account[] accounts = AccountManager.get(context).getAccountsByType("com.google");
+        List<DevAccount> dbAccounts = DevAccount.list();
+        List<DevAccount> accountsForInsert = new ArrayList<>();
         for (Account account : accounts)
         {
             DevAccount devAccount = new DevAccount(account);
+            if(dbAccounts.contains(devAccount))
+            {
+                DevAccount tmp = dbAccounts.get(dbAccounts.indexOf(devAccount));
+                devAccount.avatar = tmp.avatar;
+                devAccount.name = tmp.name;
+            }
+            else
+            {
+                accountsForInsert.add(devAccount);
+            }
             this.accounts.add(devAccount);
-            //TODO add other stuff to devAccount maybe
         }
+        DevAccount.insertInTransaction(accountsForInsert);
     }
 
     public String getFirstAccountNameOrNull()
     {
         if(!accounts.isEmpty())
         {
-            return accounts.get(0).account.name;
+            return accounts.get(0).id;
         }
         return null;
     }

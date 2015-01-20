@@ -3,6 +3,7 @@ package com.android.googleplaydeveloperconsole.app;
 import android.app.Application;
 import android.content.Context;
 
+import com.android.googleplaydeveloperconsole.app.db.DatabaseManager;
 import com.android.volley.VolleyLog;
 import com.android.volley.cache.DiskLruBasedCache;
 
@@ -32,6 +33,7 @@ public class MainApp extends Application
         context = getApplicationContext();
 		//Crashlytics.start(this);
         initImageLoader();
+        DatabaseManager.initializeInstance(this);
         DevAccountManager.getInstance().init(context);
         mainApp = this;
     }

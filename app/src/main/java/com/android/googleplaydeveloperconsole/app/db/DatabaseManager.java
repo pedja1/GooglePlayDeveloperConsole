@@ -4,6 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.android.googleplaydeveloperconsole.app.model.App;
+import com.android.googleplaydeveloperconsole.app.model.DevAccount;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DatabaseManager
@@ -20,6 +23,7 @@ public class DatabaseManager
         {
             instance = new DatabaseManager();
             mDatabaseHelper = new DatabaseHelper(context);
+            instance.mDatabase = mDatabaseHelper.getWritableDatabase();
         }
     }
 
@@ -34,24 +38,9 @@ public class DatabaseManager
         return instance;
     }
 
-    public synchronized SQLiteDatabase openDatabase()
+    public SQLiteDatabase getDatabase()
     {
-        if (mOpenCounter.incrementAndGet() == 1)
-        {
-            // Opening new database
-            mDatabase = mDatabaseHelper.getWritableDatabase();
-        }
         return mDatabase;
-    }
-
-    public synchronized void closeDatabase()
-    {
-        if (mOpenCounter.decrementAndGet() == 0)
-        {
-            // Closing database
-            mDatabase.close();
-
-        }
     }
 }
 
@@ -70,12 +59,15 @@ class DatabaseHelper extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-
+        db.execSQL(DevAccount.CREATE_TABLE);
+        db.execSQL(App.CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
+        db.execSQL(DevAccount.DROP_TABLE);
+        db.execSQL(App.DROP_TABLE);
         onCreate(db);
     }
 
