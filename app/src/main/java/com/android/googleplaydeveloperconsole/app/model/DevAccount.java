@@ -20,7 +20,7 @@ public class DevAccount
     /**
      * Id of the account (email)*/
     public final String id;
-    public String name, avatar;
+    public String name, avatar, developerId;
     private List<App> apps;
 
     public DevAccount(Account account)
